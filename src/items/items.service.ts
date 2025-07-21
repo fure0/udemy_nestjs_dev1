@@ -1,48 +1,54 @@
 import { CreateItemDto } from './dto/create-item.dto';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Item } from './items.model';
-import { v4 as uuid } from 'uuid';
+import { Item, ItemStatus } from '@prisma/client';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ItemsService {
-  private items: Item[] = [];
+  constructor(private readonly prismaService: PrismaService) {}
 
-  findAll(): Item[] {
-    return this.items;
+  async findAll(): Promise<Item[]> {
+    return await this.prismaService.item.findMany();
   }
 
-  findById(id: string): Item {
-    const items = this.items.find((item) => item.id === id);
+  async findById(id: string): Promise<Item> {
+    const items = await this.prismaService.item.findUnique({
+      where: {
+        id: id,
+      },
+    });
     if (!items) {
-      // throw new Error('商品が存在しません');
       throw new NotFoundException();
     }
     return items;
   }
 
-  /*
-  create(item: Item): Item {
-    this.items.push(item);
-    return item;
-  }
-  */
-  create(createItemDto: CreateItemDto): Item {
-    const item: Item = {
-      id: uuid(),
-      ...createItemDto,
-      status: 'ON_SALE',
-    };
-    this.items.push(item);
-    return item;
+  async create(CreateItemDto: CreateItemDto): Promise<Item> {
+    const { name, price, description } = CreateItemDto;
+    return await this.prismaService.item.create({
+      data: {
+        name,
+        price,
+        description,
+        status: ItemStatus.ON_SALE,
+      },
+    });
   }
 
-  updateStatus(id: string): Item {
-    const item = this.findById(id);
-    item.status = 'SOLD_OUT';
-    return item;
+  async updateStatus(id: string): Promise<Item> {
+    return await this.prismaService.item.update({
+      data: {
+        status: 'SOLD_OUT',
+      },
+      where: {
+        id,
+      },
+    });
   }
 
-  delete(id: string) {
-    this.items = this.items.filter((item) => item.id !== id);
+  async delete(id: string) {
+    await this.prismaService.item.delete({
+      where: { id },
+    });
   }
 }
