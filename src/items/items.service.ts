@@ -23,7 +23,7 @@ export class ItemsService {
     return items;
   }
 
-  async create(CreateItemDto: CreateItemDto): Promise<Item> {
+  async create(CreateItemDto: CreateItemDto, userId: string): Promise<Item> {
     const { name, price, description } = CreateItemDto;
     return await this.prismaService.item.create({
       data: {
@@ -31,6 +31,7 @@ export class ItemsService {
         price,
         description,
         status: ItemStatus.ON_SALE,
+        userId: userId,
       },
     });
   }
@@ -46,9 +47,9 @@ export class ItemsService {
     });
   }
 
-  async delete(id: string) {
+  async delete(id: string, userId: string) {
     await this.prismaService.item.delete({
-      where: { id },
+      where: { id, userId },
     });
   }
 }
