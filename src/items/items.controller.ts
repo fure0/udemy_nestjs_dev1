@@ -15,7 +15,7 @@ import { Item } from '@prisma/client';
 import { CreateItemDto } from './dto/create-item.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Request as ExpressRequest } from 'express';
-import { RequestUser } from 'src/types/requestUser';
+import { RequestUser } from '../types/requestUser';
 
 @Controller('items')
 export class ItemsController {
